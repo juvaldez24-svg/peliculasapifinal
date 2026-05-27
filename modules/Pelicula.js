@@ -11,4 +11,4 @@ const Pelicula = sequelize.define('Pelicula', {
   timestamps: true
 });
 
-export default Pelicula;
+export default pelicula;
