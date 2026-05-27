@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from './database.js';
 
 const Pelicula = sequelize.define('Pelicula', {
   titulo: { type: DataTypes.STRING, allowNull: false },
@@ -11,4 +11,4 @@ const Pelicula = sequelize.define('Pelicula', {
   timestamps: true
 });
 
-module.exports = Pelicula;
+export default Pelicula;

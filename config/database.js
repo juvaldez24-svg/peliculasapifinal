@@ -6,10 +6,10 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialectOptions: {
     ssl: {
       require: true,
-      rejectUnauthorized: false // Crucial para que Render acepte la conexión segura
+      rejectUnauthorized: false // Crucial para la conexión segura en Render
     }
   },
-  logging: false // Cambia a console.log si quieres ver las consultas SQL en la terminal
+  logging: false 
 });
 
 export default sequelize;

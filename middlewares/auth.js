@@ -1,18 +1,8 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
-const LLAVE_API_KEY = 'avengers_secret_key';
-const LLAVE_JWT = 'super_secret_avengers_jwt';
+const LLAVE_JWT = process.env.JWT_SECRET || 'super_secret_avengers_jwt';
 
-const validarApiKey = (req, res, next) => {
-  const apiKey = req.headers['x-api-key'];
-  
-  if (!apiKey || apiKey !== LLAVE_API_KEY) {
-    return res.status(403).json({ error: 'Acceso prohibido: API Key inválida o no provista.' });
-  }
-  next();
-};
-
-const validarTokenJWT = (req, res, next) => {
+export const validarTokenJWT = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; 
 
@@ -28,6 +18,3 @@ const validarTokenJWT = (req, res, next) => {
     return res.status(403).json({ error: 'Token inválido o expirado.' });
   }
 };
-
-export { validarTokenJWT };
-//module.exports = { validarApiKey, validarTokenJWT };
