@@ -1,30 +1,47 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import sequelize from './database.js';
-import Pelicula from './Pelicula.js'; 
-import { validarTokenJWT } from './auth.js'; 
+import Pelicula from './Pelicula.js';
 
 const app = express();
 app.use(express.json());
 
-const LLAVE_JWT = process.env.JWT_SECRET || 'super_secret_avengers_jwt';
+const LLAVE_JWT = 'super_secret_avengers_jwt';
 
-// Middleware para ver logs de las peticiones en consola
+// Middleware de Logs para ver qué peticiones entran en la terminal
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} -> ${req.url}`);
   next();
 });
 
-// Conexión automática con la Base de Datos de Render
+// Middleware para proteger únicamente las acciones de escritura (POST, PUT, DELETE)
+const validarTokenJWT = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; 
+
+  if (!token) {
+    return res.status(401).json({ error: 'Acceso denegado: Token JWT no provisto.' });
+  }
+
+  try {
+    const verificado = jwt.verify(token, LLAVE_JWT);
+    req.user = verificado;
+    next();
+  } catch (error) {
+    return res.status(403).json({ error: 'Token inválido o expirado.' });
+  }
+};
+
+// Conexión e inicio automático con la Base de Datos de Render
 try {
   await sequelize.authenticate();
-  console.log('Conexión con PostgreSQL establecida correctamente.');
-  await sequelize.sync(); 
+  console.log('¡Conexión con PostgreSQL en Render establecida correctamente!');
+  await sequelize.sync(); // Esto crea la tabla "Peliculas" en la nube si aún no existe
 } catch (error) {
   console.error('Error al inicializar la base de datos:', error);
 }
 
-// --- RUTA DE AUTENTICACIÓN ---
+// --- RUTA DE LOGIN (Pública) ---
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
@@ -40,9 +57,9 @@ app.post('/login', (req, res) => {
   res.status(401).json({ error: 'Credenciales inválidas.' });
 });
 
-// --- RUTAS PÚBLICAS (¡Funcionan directo en el navegador!) ---
+// --- RUTAS DE VISUALIZACIÓN (¡Públicas, funcionan directo en el navegador!) ---
 
-// Obtener todas las películas
+// Ver todas las películas
 app.get('/peliculas', async (req, res) => {
   try {
     const peliculas = await Pelicula.findAll();
@@ -52,7 +69,7 @@ app.get('/peliculas', async (req, res) => {
   }
 });
 
-// Obtener una película por ID
+// Ver una sola película por su ID
 app.get('/peliculas/:id', async (req, res) => {
   try {
     const pelicula = await Pelicula.findByPk(req.params.id);
@@ -62,10 +79,9 @@ app.get('/peliculas/:id', async (req, res) => {
   }
 });
 
+// --- RUTAS DE EDICIÓN (Privadas, requieren Token JWT en Postman) ---
 
-// --- RUTAS PRIVADAS (Requieren Token JWT enviado desde Postman) ---
-
-// Crear una película
+// Agregar una película
 app.post('/peliculas', validarTokenJWT, async (req, res) => {
   try {
     const nuevaPelicula = await Pelicula.create(req.body);
@@ -75,7 +91,7 @@ app.post('/peliculas', validarTokenJWT, async (req, res) => {
   }
 });
 
-// Actualizar una película
+// Modificar una película
 app.put('/peliculas/:id', validarTokenJWT, async (req, res) => {
   try {
     const pelicula = await Pelicula.findByPk(req.params.id);
@@ -105,8 +121,8 @@ app.delete('/peliculas/:id', validarTokenJWT, async (req, res) => {
   }
 });
 
-// Inicializar el servidor en el puerto provisto por Render
+// Encender el servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor de películas corriendo con éxito en el puerto ${PORT}`);
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
