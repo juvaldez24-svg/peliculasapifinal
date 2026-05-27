@@ -1,5 +1,5 @@
 import { DataTypes } from 'sequelize';
-import sequelize from './database.js'; 
+import sequelize from '../database.js'; 
 
 const Pelicula = sequelize.define('Pelicula', {
   titulo: { type: DataTypes.STRING, allowNull: false },
