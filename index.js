@@ -1,8 +1,8 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import sequelize from './database.js';
-import Pelicula from './Pelicula.js';
-
+import sequelize from './database.js'; 
+import Pelicula from './pelicula.js';  
+ 
 const app = express();
 app.use(express.json());
 
